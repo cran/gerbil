@@ -1,0 +1,6 @@
+\documentclass{article}
+\usepackage{pdfpages}
+%\VignetteIndexEntry{Gerbil Introduction}
+\begin{document}
+\includepdf[pages=-, fitpaper=true]{gerbil_introduction.pdf}
+\end{document}
