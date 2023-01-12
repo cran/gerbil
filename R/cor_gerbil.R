@@ -299,7 +299,7 @@ print.cor_gerbil = function(x, ...) {
   cor.diffs <- abs(cors.obs - cors.mis)
   diag(cor.diffs) <- NA
   
-  cat("\nSummary analysis comparing correlations calculated between observed cases with \n   corresponding correlations calcluated between imputed cases:\n\n")
+  cat("\nSummary analysis comparing correlations calculated between observed cases with \n   corresponding correlations calculated between imputed cases:\n\n")
 
   cat("Average absolute difference in correlation between observed and imputed cases:\n\n")
   cat(round(mean(cor.diffs[upper.tri(cor.diffs)], na.rm = TRUE), 4))

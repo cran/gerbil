@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# gerbil - Generalized Efficient Regression-Based multivariate Imputation with Latent processes
+# gerbil - General Efficient Regression-Based Imputation with Latent processes
 
 <!-- badges: start -->
 
@@ -9,41 +9,25 @@
 [![lifecycle](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://protect2.fireeye.com/v1/url?k=629f7812-3d0440c6-629f5645-0cc47a335a36-56aa3ca237e81bea&q=1&e=a76afc48-0e78-42f8-8359-5125a03c7e7c&u=https%3A%2F%2Flifecycle.r-lib.org%2Farticles%2Fstages.html)
 <!-- badges: end -->
 
-This R packageimplements a coherent multiple imputation of general
-multivariate data as implemented through the GERBIL algorithm described
-by Robbins (2020).
+This R package implements coherent multiple imputation of general
+multivariate data using the GERBIL algorithm described by Robbins (2020;
+arXiv:2008.02243).
 
 ## Installation
 
-Once the package is submitted to cran, you will be able to install the
-released version of gerbil from [CRAN](https://CRAN.R-project.org) with:
+This package is on CRAN. You are able to install the released version of
+gerbil from [CRAN](https://CRAN.R-project.org) with:
 
 ``` r
 install.packages("gerbil")
 ```
 
-For now, you have two options:
-
-1)  E-mail Pedro (<plima@rand.org>) and ask for the development version
-    of the gerbil package. Once you get the gerbil package, you can
-    install it with:
-
-<!-- end list -->
+You can also install directly from this GitHub repository:
 
 ``` r
 # run if you don't have devtools installed:
 install.packages("devtools")
-devtools::install_local("file_you_get_from_pedro.tar.gz")
-```
-
-2)  Download this repository
-
-You can also download this repository, open the gerbil R project and
-load all functions without building the package.
-
-``` r
-# load all functions
-devtools::load_all()
+devtools::install_github("michaelwrobbins/gerbil")
 ```
 
 ## Example
@@ -53,31 +37,51 @@ Load your dataset and run the `gerbil` function:
 ``` r
 library(gerbil)
 
-# Load the idh sample data set:
-data(ihd)
+# Load the ihd sample data set with MCAR missingness:
+data(ihd_mcar)
 
-my_dataset = ihd
+my_dataset = ihd_mcar
 
 # Run the Imputation Process:
 gerbil_object <- gerbil(dat = my_dataset, m = 1, ords = "education_level", semi = "farm_labour_days", bincat = "job_field")
 #> Variable Summary:
-#>                  Variable.Type Num.Observed Num.Miss Miss.Rate
-#> sex                     binary        40048     2107     5.00%
-#> age                        EMP        42155        0     0.00%
-#> marital_status     categorical        42155        0     0.00%
-#> job_field          categorical        40048     2107     5.00%
-#> farm_labour_days      semicont        40048     2107     5.00%
-#> own_livestock           binary        42155        0     0.00%
-#> education_level        ordinal        40019     2136     5.07%
-#> income                     EMP        40048     2107     5.00%
+#>                     Variable.Type Num.Observed Num.Miss Miss.Rate
+#> sex                        binary        42125        0     0.00%
+#> age              continuous (EMP)        27382    14743    35.00%
+#> marital_status             binary        27382    14743    35.00%
+#> job_field             categorical        27382    14743    35.00%
+#> farm_labour_days         semicont        27382    14743    35.00%
+#> own_livestock              binary        27382    14743    35.00%
+#> education_level           ordinal        27382    14743    35.00%
+#> income           continuous (EMP)        27382    14743    35.00%
 #> 
-#> Completed transformations, Time = 0.33
-#> Imp. 1: gerbil initialized.  Time = 3.52
-#> Imp. 1: MCMC iteration 1 completed. Total time = 3.56, I-Step: 3.51, P-Step: 0.05
-#> Imp. 1: MCMC iteration 2 completed. Total time = 3.44, I-Step: 3.39, P-Step: 0.05
-#> Imp. 1: MCMC iteration 3 completed. Total time = 3.46, I-Step: 3.41, P-Step: 0.05
-#> Imp. 1: MCMC iteration 4 completed. Total time = 3.45, I-Step: 3.40, P-Step: 0.05
-#> Imp. 1: MCMC iteration 5 completed. Total time = 3.45, I-Step: 3.40, P-Step: 0.05
+#> Completed transformations, Time = 0.15
+#> Imp. 1: gerbil initialized.  Time = 2.06
+#> Imp. 1: MCMC iteration 1 completed. Total time = 1.70, I-Step: 1.67, P-Step: 0.03
+#> Imp. 1: MCMC iteration 2 completed. Total time = 1.81, I-Step: 1.78, P-Step: 0.03
+#> Imp. 1: MCMC iteration 3 completed. Total time = 1.58, I-Step: 1.55, P-Step: 0.03
+#> Imp. 1: MCMC iteration 4 completed. Total time = 1.69, I-Step: 1.67, P-Step: 0.02
+#> Imp. 1: MCMC iteration 5 completed. Total time = 1.69, I-Step: 1.66, P-Step: 0.03
+#> Imp. 1: MCMC iteration 6 completed. Total time = 1.75, I-Step: 1.72, P-Step: 0.03
+#> Imp. 1: MCMC iteration 7 completed. Total time = 1.70, I-Step: 1.67, P-Step: 0.03
+#> Imp. 1: MCMC iteration 8 completed. Total time = 1.66, I-Step: 1.63, P-Step: 0.03
+#> Imp. 1: MCMC iteration 9 completed. Total time = 1.71, I-Step: 1.68, P-Step: 0.03
+#> Imp. 1: MCMC iteration 10 completed. Total time = 1.53, I-Step: 1.50, P-Step: 0.03
+#> Imp. 1: MCMC iteration 11 completed. Total time = 1.77, I-Step: 1.73, P-Step: 0.04
+#> Imp. 1: MCMC iteration 12 completed. Total time = 1.66, I-Step: 1.63, P-Step: 0.03
+#> Imp. 1: MCMC iteration 13 completed. Total time = 1.74, I-Step: 1.71, P-Step: 0.03
+#> Imp. 1: MCMC iteration 14 completed. Total time = 1.78, I-Step: 1.75, P-Step: 0.03
+#> Imp. 1: MCMC iteration 15 completed. Total time = 1.78, I-Step: 1.75, P-Step: 0.03
+#> Imp. 1: MCMC iteration 16 completed. Total time = 1.67, I-Step: 1.64, P-Step: 0.03
+#> Imp. 1: MCMC iteration 17 completed. Total time = 1.86, I-Step: 1.83, P-Step: 0.03
+#> Imp. 1: MCMC iteration 18 completed. Total time = 1.61, I-Step: 1.58, P-Step: 0.03
+#> Imp. 1: MCMC iteration 19 completed. Total time = 1.55, I-Step: 1.51, P-Step: 0.04
+#> Imp. 1: MCMC iteration 20 completed. Total time = 1.64, I-Step: 1.61, P-Step: 0.03
+#> Imp. 1: MCMC iteration 21 completed. Total time = 1.57, I-Step: 1.54, P-Step: 0.03
+#> Imp. 1: MCMC iteration 22 completed. Total time = 1.58, I-Step: 1.55, P-Step: 0.03
+#> Imp. 1: MCMC iteration 23 completed. Total time = 1.52, I-Step: 1.49, P-Step: 0.03
+#> Imp. 1: MCMC iteration 24 completed. Total time = 1.55, I-Step: 1.53, P-Step: 0.02
+#> Imp. 1: MCMC iteration 25 completed. Total time = 1.49, I-Step: 1.47, P-Step: 0.02
 #> Completed untransformations for imputed dataset 1, Time = 0.04
 ```
 
@@ -89,12 +93,12 @@ imputations:
 plot(gerbil_object)
 ```
 
-<img src="man/figures/README-unnamed-chunk-2-1.png" width="100%" /><img src="man/figures/README-unnamed-chunk-2-2.png" width="100%" /><img src="man/figures/README-unnamed-chunk-2-3.png" width="100%" /><img src="man/figures/README-unnamed-chunk-2-4.png" width="100%" /><img src="man/figures/README-unnamed-chunk-2-5.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-2-1.png" width="100%" /><img src="man/figures/README-unnamed-chunk-2-2.png" width="100%" /><img src="man/figures/README-unnamed-chunk-2-3.png" width="100%" /><img src="man/figures/README-unnamed-chunk-2-4.png" width="100%" /><img src="man/figures/README-unnamed-chunk-2-5.png" width="100%" /><img src="man/figures/README-unnamed-chunk-2-6.png" width="100%" /><img src="man/figures/README-unnamed-chunk-2-7.png" width="100%" />
 
 ## Vignettes
 
-Max Griswold is developing package vignettes that are available within
-the ./vignettes folder in this repository.
+We have developed package vignettes that are available within the
+./vignettes folder in this repository.
 
 ## Tests
 

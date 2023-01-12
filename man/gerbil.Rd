@@ -23,7 +23,8 @@ gerbil(
   mass = rep(0, length(semi)),
   ineligible = NULL,
   trace = TRUE,
-  seed = NULL
+  seed = NULL,
+  fully.syn = FALSE
 )
 }
 \arguments{
@@ -64,6 +65,8 @@ gerbil(
 \item{trace}{A logical that, if \code{TRUE}, implies that means and variances of variables are tracked across iterations. Set to \code{FALSE} to save computation time. However, trace plots and R hat statistics are disabled for \code{gerbil} objects created with \code{trace = FALSE}. Defaults to \code{TRUE}.}
 
 \item{seed}{An integer that, when specified, is used to set the random number generator via \code{set.seed()}.}
+
+\item{fully.syn}{A logical that, if \code{TRUE}, implies that a fully synthetic dataset will be created (although variables without missingness are not altered).}
 }
 \value{
 \code{gerbil()} returns an object the class \code{gerbil} that contains the following slots:
@@ -192,7 +195,9 @@ imputed.gerb <- imputed(imps.gerbil.5, imp = 1)
 
 # Write all imputed datasets to an Excel file
 write.gerbil(imps.gerbil.5, file = file.path(tempdir(), "gerbil_example.xlsx"), imp = 1:5)
+}
 
+\dontrun{
 if(requireNamespace('mice')){
 # Impute using mice for comparison
 

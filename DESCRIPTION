@@ -2,20 +2,12 @@ Type: Package
 Package: gerbil
 Title: Generalized Efficient Regression-Based Imputation with Latent
         Processes
-Version: 0.1.5
-Authors@R: 
-    c(person(given = "Michael",
-             family = "Robbins",
-             role = c("aut", "cre"),
-             email = "mrobbins@rand.org"),
-      person(given = "Max",
-             family = "Griswold",
-             role = "ctb",
-             email = "griswold@rand.org"),
-      person(given = "Pedro",
-             family = "Nascimento de Lima",
-             role = "ctb",
-             email = "plima@rand.org"))
+Version: 0.1.9
+Authors@R: c(
+    person("Michael", "Robbins", , "mrobbins@rand.org", role = c("aut", "cre")),
+    person("Max", "Griswold", , "griswold@rand.org", role = "ctb"),
+    person("Pedro", "Nascimento de Lima", , "plima@rand.org", role = "ctb")
+  )
 Author: Michael Robbins [aut, cre],
   Max Griswold [ctb],
   Pedro Nascimento de Lima [ctb]
@@ -25,7 +17,7 @@ Description: Implements a new multiple imputation method that draws
     underpins generally structured data. This model is constructed using a
     sequence of flexible conditional linear models that enables the
     resulting procedure to be efficiently implemented on high dimensional
-    datasets in practice.
+    datasets in practice. See Robbins (2021) <arXiv:2008.02243>.
 License: GPL-2
 Depends: R (>= 2.10)
 Imports: base, DescTools, graphics, grDevices, lattice, MASS, mvtnorm,
@@ -36,6 +28,6 @@ Encoding: UTF-8
 LazyData: true
 NeedsCompilation: no
 RoxygenNote: 7.1.1
-Packaged: 2021-03-22 18:07:27 UTC; mrobbins
+Packaged: 2023-01-11 18:35:14 UTC; mrobbins
 Repository: CRAN
-Date/Publication: 2021-03-23 09:00:08 UTC
+Date/Publication: 2023-01-12 11:20:02 UTC

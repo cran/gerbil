@@ -74,6 +74,7 @@
 #' @param ineligible Either a scalar or a matrix that is used to determined which values are to be considered missing but ineligible for imputation. Such values will be imputed internally within \code{gerbil} to ensure a coherent imputation model but will be reset as missing after imputations have been created. If \code{ineligible} is a scalar, all data points that take on the respective value will be considered missing but ineligible for imputation. If \code{ineligible} is a matrix (with the same number of rows as \code{dat} and column names that overlap with \code{dat}), entries of \code{TRUE} or \code{1} in \code{ineligible} indicate values that are missing but ineligible for imputation. If \code{ineligible = NULL} (the default), all missing values will be considered eligible for imputation. 
 #' @param trace A logical that, if \code{TRUE}, implies that means and variances of variables are tracked across iterations. Set to \code{FALSE} to save computation time. However, trace plots and R hat statistics are disabled for \code{gerbil} objects created with \code{trace = FALSE}. Defaults to \code{TRUE}.
 #' @param seed An integer that, when specified, is used to set the random number generator via \code{set.seed()}. 
+#' @param fully.syn A logical that, if \code{TRUE}, implies that a fully synthetic dataset will be created (although variables without missingness are not altered). 
 #' 
 #' @return \code{gerbil()} returns an object the class \code{gerbil} that contains the following slots:
 #'
@@ -178,7 +179,9 @@
 #' 
 #' # Write all imputed datasets to an Excel file
 #' write.gerbil(imps.gerbil.5, file = file.path(tempdir(), "gerbil_example.xlsx"), imp = 1:5)
+#' }
 #' 
+#' \donttest{
 #' if(requireNamespace('mice')){
 #' # Impute using mice for comparison
 #' 
@@ -229,7 +232,7 @@ gerbil <- function (dat, m = 1, mcmciter = 25, predMat = NULL, type = NULL,
     visitSeq = NULL, ords = NULL, semi = NULL, bincat = NULL,
     cont.meth = "EMP", num.cat = 12, r = 5, verbose = TRUE,
     n.cores = NULL, cl.type = NULL, mass = rep(0, length(semi)), ineligible = NULL, 
-    trace = TRUE, seed = NULL)
+    trace = TRUE, seed = NULL, fully.syn = FALSE)
 {
     if (length(colnames(dat)) == 0) {
         colnames(dat) <- paste0("X", 1:NCOL(dat))
@@ -710,7 +713,7 @@ gerbil <- function (dat, m = 1, mcmciter = 25, predMat = NULL, type = NULL,
             mcmciter = mcmciter, bincols = bincols, ordcols = ordcols,
             censcols = censcols, cens = cens, r = r, verbose = FALSE,
             semicols.new = semicols.new, calc.var = calc.var, calc.latent = calc.latent, 
-            trace = trace)
+            trace = trace, fully.syn = fully.syn)
         last <- proc.time()
         parallel::stopCluster(cl)
         if (verbose) {
@@ -728,7 +731,7 @@ gerbil <- function (dat, m = 1, mcmciter = 25, predMat = NULL, type = NULL,
                 mcmciter = mcmciter, bincols = bincols, ordcols = ordcols,
                 censcols = censcols, cens = cens, r = r, verbose = verbose,
                 semicols.new = semicols.new, calc.var = calc.var, calc.latent = calc.latent, 
-                trace = trace)
+                trace = trace, fully.syn = fully.syn)
         }
         else {
             tmpdat <- list.out[[i]]
@@ -775,7 +778,7 @@ gerbil <- function (dat, m = 1, mcmciter = 25, predMat = NULL, type = NULL,
                 transcols = c(transcols, censcols), transtype = c(varTrans,
                   censTrans), nams = colnames(dat1)[c(transcols,
                   censcols)], cens = cens, verbose = verbose1,
-                X = i)
+                X = i, fully.syn = fully.syn)
         }
         else {
             out1 <- tmpdat
@@ -1174,8 +1177,8 @@ gerbil.trans.cens <- function (dat, transcols = 1:NCOL(dat), transtype = rep("NO
 
 
 gerbil.inner <- function (X = 1, data, predictorMatrix, mcmciter = 100, obs = NULL, obs.latent = NULL, cat.cols = NULL, is.cat = NULL,
-                          mis = NULL, bincols = NULL, ordcols = NULL, censcols = NULL, r = 5,
-                          cens = NULL, verbose = TRUE, semicols.new = NULL, calc.var = FALSE, calc.latent = FALSE, trace = TRUE)
+                          mis = NULL, bincols = NULL, ordcols = NULL, censcols = NULL, r = 5, cens = NULL, verbose = TRUE, 
+                          semicols.new = NULL, calc.var = FALSE, calc.latent = FALSE, trace = TRUE, fully.syn = FALSE)
 {
 
   ### Define gerbil.init within gerbil.inner
@@ -1505,7 +1508,7 @@ gerbil.inner <- function (X = 1, data, predictorMatrix, mcmciter = 100, obs = NU
   }
 
   ### Define IStep within gerbil.inner
-  IStep <- function (data, obs, params, n = nrow(data), p1 = ncol(data), mis = NULL, p = length(mis), olddat = NULL, lowupp = NULL) {
+  IStep <- function (data, obs, params, n = nrow(data), p1 = ncol(data), mis = NULL, p = length(mis), olddat = NULL, lowupp = NULL, fully.syn = FALSE) {
 
     ### Define getEX within IStep
     getEX <- function (data, betas, mis, n = nrow(data), p1 = ncol(data), p = length(mis)) {
@@ -1619,12 +1622,17 @@ gerbil.inner <- function (X = 1, data, predictorMatrix, mcmciter = 100, obs = NU
     betas <- params[[1]]
     ### betas is a p x p1 + 1 matrix where row i gives the regression coefficients for the mis[i]^th variable
     sigmas <- params[[2]]
-    means <- getEX(data ,betas, mis)
+    means <- getEX(data, betas, mis)
     covar <- getCovs(betas[, (mis + 1)], sigmas ,p)
-    covar <- solve(covar)
-    for (j in 1:p) {
-      i <- mis[j]
-      data[,i][obs[,i] == 0] <- sweepimpstep(data = data[, mis], x = j, obs = obs[,i], means = means, invSigma = covar, n = n, p = p, lims = lowupp[[j]])
+
+    if (fully.syn) {
+      data[, mis] <- means + mvtnorm::rmvnorm(n = NROW(means), sigma = covar)
+    } else {
+      covar <- solve(covar)
+      for (j in 1:p) {
+        i <- mis[j]
+        data[,i][obs[,i] == 0] <- sweepimpstep(data = data[, mis], x = j, obs = obs[,i], means = means, invSigma = covar, n = n, p = p, lims = lowupp[[j]])
+      }
     }
     return(data)
   }
@@ -1933,7 +1941,7 @@ gerbil.inner <- function (X = 1, data, predictorMatrix, mcmciter = 100, obs = NU
   cutpts <- imputes[[3]]
   predictorMatrix <- imputes[[2]]
   imputes <- imputes[[1]]
-  params <- PStep(imputes, predictorMatrix, mis = new.mis, bincols = bincols, ordcols = ordcols)
+  #params <- PStep(imputes, predictorMatrix, mis = new.mis, bincols = bincols, ordcols = ordcols)
   last <- proc.time()
   if (verbose) {
     message("Imp. ",imp,": gerbil initialized.  Time = ", formatC(last[3] - first[3], format = "f", digits = 2), "\n", sep = "", appendLF = FALSE)
@@ -1975,12 +1983,13 @@ gerbil.inner <- function (X = 1, data, predictorMatrix, mcmciter = 100, obs = NU
   for (i in 1:mcmciter) {
 
     first <- proc.time()
-    imputes <- IStep(imputes, obs, params, mis = new.mis, olddat = data, lowupp = lowupp)
-    middle <- proc.time()
     params <- PStep(dat = imputes, predictorMatrix = predictorMatrix, mis = new.mis, bincols = bincols, ordcols = ordcols)
+    #middle <- proc.time()
+    imputes <- IStep(imputes, obs, params, mis = new.mis, olddat = data, lowupp = lowupp, fully.syn = (i == mcmciter & fully.syn))
     last <- proc.time()
     if (verbose) {
-      message("Imp. ", imp, ": MCMC iteration ", i, " completed. Total time = ", formatC(last[3] - first[3], format = "f", digits = 2),", I-Step: ", formatC(middle[3] - first[3], format = "f", digits = 2), ", P-Step: ", formatC(last[3] - middle[3], format = "f", digits = 2), "\n", sep = "", appendLF = FALSE)
+      #message("Imp. ", imp, ": MCMC iteration ", i, " completed. Total time = ", formatC(last[3] - first[3], format = "f", digits = 2),", P-Step: ", formatC(middle[3] - first[3], format = "f", digits = 2), ", I-Step: ", formatC(last[3] - middle[3], format = "f", digits = 2), "\n", sep = "", appendLF = FALSE)
+      message("Imp. ", imp, ": MCMC iteration ", i, " completed. Total time = ", formatC(last[3] - first[3], format = "f", digits = 2), "\n", sep = "", appendLF = FALSE)
     }
 
     if (trace) {
@@ -2051,7 +2060,7 @@ gerbil.inner <- function (X = 1, data, predictorMatrix, mcmciter = 100, obs = NU
 
 
 gerbil.untrans <- function(olddat, newdat, parms, transcols = 1:NCOL(olddat), transtype = rep("NONE", NCOL(olddat)),
-                           nams = (1:NCOL(olddat))[transcols], cens = NULL, verbose = TRUE, X = 1)
+                           nams = (1:NCOL(olddat))[transcols], cens = NULL, verbose = TRUE, X = 1, fully.syn = FALSE)
 {
 
   tmp.time.all <- proc.time()
@@ -2060,9 +2069,13 @@ gerbil.untrans <- function(olddat, newdat, parms, transcols = 1:NCOL(olddat), tr
   out <- olddat
 
   for (i in 1:length(transcols)) {
-    imped <- is.na(olddat[,transcols[i]])
-    if (is.element(colnames(olddat)[transcols[i]],colnames(cens))) {
-      imped <- imped|cens[,colnames(olddat)[transcols[i]]]
+    if (!fully.syn) {
+      imped <- is.na(olddat[,transcols[i]])
+      if (is.element(colnames(olddat)[transcols[i]],colnames(cens))) {
+        imped <- imped|cens[,colnames(olddat)[transcols[i]]]
+      }
+    } else {
+      imped <- rep(TRUE, NCOL(olddat))
     }
     #|substr(olddat[,transcols[i]],1,1)==">"
     if (sum(imped)>0) {
@@ -2078,7 +2091,7 @@ gerbil.untrans <- function(olddat, newdat, parms, transcols = 1:NCOL(olddat), tr
         tmp <- qemp(dat = tmp, tab = parms[[i]][[1]])
         tmptime <- proc.time() - tmptime
         #cat("Untransformed ", nams[i], " w/ Emp. Dist., Time = ", formatC(tmptime[3], format = "f", digits = 2), ", m = ", length(tmp), "\n", sep = "")
-        if (class(tmp) == "factor") {
+        if (inherits(tmp, "factor")) {
           tmp <- as.character(tmp)
           tmp1[imped] <- tmp
           tmp1 <- factor(tmp1)

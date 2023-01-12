@@ -106,7 +106,7 @@ imputed <- function(gerb, imp = 1) {
   }
 
   if (k > 1) {
-    if (class(gerb$imputed[[1]]) == "matrix") {
+    if (inherits(gerb$imputed[[1]], "matrix")) {
       out <- matrix(NA, k * n, p + 2)
     } else {
       out <- data.frame(matrix(NA, k * n, p + 2))
@@ -160,8 +160,6 @@ imputed <- function(gerb, imp = 1) {
 #' @param row.names A logical value indicating whether the row names of the datasets are to be written.
 #' 
 #' @return No returned value, but instead a data file is written to a specified directory.
-#' 
-#' @import openxlsx
 #'
 #' @examples
 #' \donttest{
@@ -234,16 +232,15 @@ write.gerbil <- function(gerb, file = NULL, imp = NULL, tall = FALSE, row.names 
   }
 
   if (use.xlsx) {
-  # It is more straightforward to always require the package and use that as a
-  # dependency.
-  #   xlsx.loaded <- is.element("openxlsx", loadedNamespaces())
-  #   if (!requireNamespace("openxlsx", quietly = TRUE)) {
-  #     stop("The openxlsx package is needed when saving multiple datasets to a single file or when the file name specifies a .xlsx extension. Please install openxlsx, or if you'd like to write to .csv, only select a single post-intervention time and append the filename appropriately.",
-  #          call. = FALSE)
-  #   }
-  #   if (!xlsx.loaded) {
-  #     attachNamespace("openxlsx")
-  #   }
+
+     xlsx.loaded <- is.element("openxlsx", loadedNamespaces())
+     if (!requireNamespace("openxlsx", quietly = TRUE)) {
+       stop("The openxlsx package is needed when saving multiple datasets to a single file or when the file name specifies a .xlsx extension. Please install openxlsx or write the data as a .csv.",
+            call. = FALSE)
+     }
+     if (!xlsx.loaded) {
+       attachNamespace("openxlsx")
+     }
 
     if (!tall) {
       wb <- openxlsx::createWorkbook()

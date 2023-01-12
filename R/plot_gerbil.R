@@ -594,6 +594,9 @@ plot_gerbil.uni <- function (gerb, file = NULL, vars = NULL, imp = 1, obs.col = 
       }
 
       if (plot.legend) {
+        if (length(legend.text) > 0) {
+          leg[1:length(legend.text)] <- legend.text
+        }
         barplot(ests, beside = T, legend.text = T, col = col, args.legend = list(legend = leg, bty = bty1, x = loc), main = main1, ylab = ylab1, xlab = xlab1, ...)
       } else {
         barplot(ests, beside = T, col = col, main = main1, ylab = ylab1, xlab = xlab1, ...)
@@ -690,6 +693,9 @@ plot_gerbil.uni <- function (gerb, file = NULL, vars = NULL, imp = 1, obs.col = 
       }
 
       if (plot.legend) {
+        if (length(legend.text) > 0) {
+          leg[1:length(legend.text)] <- legend.text
+        }
         barplot(ests, beside=T, legend.text = T, col = col, 
                 args.legend = list(legend = leg, bty = bty1, x = loc, cex = cex1), main = main1, ylab = ylab1, xlab = xlab1, ...)
       } else {

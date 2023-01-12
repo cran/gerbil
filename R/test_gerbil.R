@@ -64,7 +64,6 @@
 #' @export
 #' 
 #' @importFrom stats fisher.test chisq.test ks.test quantile
-#' @importFrom DescTools GTest
 #' 
 gof_gerbil <- function (x, y = NULL, type = 1, imp = 1, breaks = NULL, method = c("chi-squared", "fisher", "G"), ks = FALSE, partial = "imputed", ...) 
 {
@@ -167,9 +166,16 @@ gof_gerbil.uni <- function (gerb, vars = NULL, imp = 1, breaks = NULL, method = 
 
   method <- method[1]
 
-  #if(method == "G") {
-  #  library(DescTools)
-  #}
+  if (method == "G") {
+    DescTools.loaded <- is.element("DescTools", loadedNamespaces())
+    if (!requireNamespace("DescTools", quietly = TRUE)) {
+      stop("The DescTools package is needed when setting method == \'G\'. Please install DescTools or choose a different method.",
+           call. = FALSE)
+    }
+    if (!DescTools.loaded) {
+      attachNamespace("DescTools")
+    }
+  }
 
   if (is.logical(imp)) {
     if (imp) {
@@ -462,9 +468,16 @@ gof_gerbil.mult <- function (gerb, vars = NULL, imp = 1, breaks = NULL, method =
 
   method <- method[1]
 
-  #if(method == "G") {
-  #  library(DescTools)
-  #}
+  if (method == "G") {
+    DescTools.loaded <- is.element("DescTools", loadedNamespaces())
+    if (!requireNamespace("DescTools", quietly = TRUE)) {
+      stop("The DescTools package is needed when setting method == \'G\'. Please install DescTools or choose a different method.",
+           call. = FALSE)
+    }
+    if (!DescTools.loaded) {
+      attachNamespace("DescTools")
+    }
+  }
 
   if (is.logical(imp)) {
     if (imp) {
